@@ -9,8 +9,8 @@ library(rJava)
 library(qdap)
 
 # download.file("http://www.bannedwordlist.com/lists/swearWords.txt", "profanity.txt")
-# profanity <- read.csv("profanity.txt", header = F, stringsAsFactors = F)
-# profanity <- c(profanity, recursive = T)
+profanity <- read.csv("profanity.txt", header = F, stringsAsFactors = F)
+profanity <- c(profanity, recursive = T)
 # pasteOR <- function(x) paste(x, sep = "|")
 # profanityList <- as.character(profanity) %>% 
 #   paste("\\<", ., "\\>", sep = "") %>% 
@@ -63,7 +63,7 @@ divideSentences <- function(text) {
 
 removeFunnyCharacters <- function(text) {
   
-  gsub("[^[:alnum:] ]", "", text)
+  gsub("[^[:alpha:] ]", "", text)
   
 }
 
@@ -113,7 +113,7 @@ preProcess <- function(corpus)  {
   
   print("Step 5/7: Replace profanity")
   #tm_map(corpus, content_transformer(replaceProfanity))
-  tm_map(corpus, removeWords, word = profanity)
+  tm_map(corpus, removeWords, words = profanity)
   
   print("Step 6/7: Remove funny characters (and punctuation)")
   tm_map(training, removePunctuation)
@@ -123,7 +123,12 @@ preProcess <- function(corpus)  {
   tm_map(corpus, stripWhitespace)
 }
 
-system.time(preProcess(training))
+preProcessTime <- system.time(preProcess(training))
+
+tm_map(training, removeWords, words = profanity)
+tm_map(training, removePunctuation)
+tm_map(training, content_transformer(removeFunnyCharacters))
+tm_map(training, stripWhitespace)
 
 #system.time(tm_map(corpus, content_transformer(replaceNonDictionaryWords)))
 
@@ -150,22 +155,45 @@ tokenizer4 <- getTokenizer(4)
 tokenizer5 <- getTokenizer(5)
 tokenizer6 <- getTokenizer(6)
 
-dtm1 <- 
+dtm1.keep <- 
+  DocumentTermMatrix(trainingProc, 
+                     control = list(tokenize = tokenizer1,
+                                    tolower = F,
+                                    bounds = list(local = c(2, Inf)),
+                                    wordLengths = c(1, 30)))
+
+dtm1.remove1 <- 
   DocumentTermMatrix(training, 
                      control = list(tokenize = tokenizer1,
                                     tolower = F,
-                                    wordLengths = c(1, Inf),
-                                    bounds = list(local = c(c, Inf))))
+                                    bounds = list(local = c(1, 1)),
+                                    wordLengths = c(1, Inf)))
+
+dtm1.remove2 <- 
+  DocumentTermMatrix(training, 
+                     control = list(tokenize = tokenizer1,
+                                    tolower = F,
+                                    wordLengths = c(31, Inf)))
 
 save(dtm1, file = "dtm1.rda")
 remove(dtm1)
 gc()
 
-dictionary <- findMostFreqTerms(dtm1, 95000)
+dictionary <- names(colSums(as.matrix(dtm1.keep)))
+
+remove1 <- names(colSums(as.matrix(dtm1.remove1)))
+remove2 <- names(colSums(as.matrix(dtm1.remove2)))
+
+remove1list <- split(remove1, ceiling(500 * seq(remove1) / length(remove1)))
+
+pblapply(remove1list, function(x) tm_map(training, removeWords, words = x))
+tm_map(training, removeWords, words = remove1)
+tm_map(training, removeWords, words = remove2)
 
 dtm2 <- DocumentTermMatrix(training, control = list(tokenize = tokenizer2,
                                                     tolower = F,
-                                                    wordLengths = c(1, Inf)))
+                                                    wordLengths = c(1, Inf)
+                                                    ))
 
 save(dtm2, file = "dtm2.rda")
 remove(dtm2)

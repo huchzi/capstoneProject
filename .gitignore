@@ -4,4 +4,7 @@
 .Ruserdata
 Corpus/
 OldNGrams/
+processedCorpus/
 *.db
+*.rda
+*.RData

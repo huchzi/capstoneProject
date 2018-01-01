@@ -2,11 +2,26 @@ dictionaryList <- as.character(dictionary) %>% paste("\\b", ., "\\b", sep = "") 
 dictionaryRegEx <- do.call(paste, c(dictionaryList, sep = "|")) %>%
   paste("(", ., ")", sep = "")
 
+dictionary <- findMostFreqTerms(dtm1.keep, 950)$en_US.news_training.txt
+dictionary <- setNames(names(dictionary), names(dictionary))
 dictionaryList <- as.character(dictionary) %>% 
   #paste("\\<", ., "\\>", sep = "") %>% 
   as.list
 dictionaryRegEx <- do.call(paste, c(dictionaryList, sep = "|")) %>%
   paste("\\b(^", ., ")\\b", sep = "")
+regmatches("test: this is a test", gregexpr(dictionaryRegEx, "test: this is a test"))
+
+keepDictionaryWords <- function(text) {
+  
+  FUN <- function(text)
+  {
+    textVector <- tokenize_words(text)[[1]]
+    textVector <- dictionary[textVector]
+    textVector <- paste(textVector[!is.na(textVector)], collapse = " ")
+  }
+  
+  pblapply(text, FUN)
+}
 
 replaceNonDictionaryWords <- function(text) {
   
@@ -55,11 +70,57 @@ replaceNonDictionaryWords <- function(text) {
 
 replaceNonDictionaryWords <- function(text) {
   
-  textVector <- dictHash[strsplit(text, split = " ")[[1]]]
-  # textVector[!(textVector %in% dictionary)] <- "UNKNOWN"
-  do.call("paste", as.list(names(textVector)))
+  FUN <- function(txt)
+  {  
+    textVector <- dictHash[strsplit(text, split = " ")[[1]]]
+    # textVector[!(textVector %in% dictionary)] <- "UNKNOWN"
+    do.call("paste", as.list(names(textVector)))
+  }
+  
+  pblapply(text, FUN)
   
 }
 
 # lapply(findMostFreqTerms(dtm1, 95000), sum)
 # rowSums(as.matrix(dtm1))
+
+trainingProcSource <- DirSource("processedCorpus/")
+
+trainingProc <- PCorpus(trainingProcSource, dbControl = list(dbName = "trainingProc.db",
+                                                   dbType = "DB1"))
+
+dictionary <- findMostFreqTerms(dtm1.keep, 2000)$en_US.news_training.txt
+dictionary <- setNames(names(dictionary), names(dictionary))
+
+tm_map(trainingProc, content_transformer(keepDictionaryWords))
+
+dtm2 <- DocumentTermMatrix(trainingProc, control = list(tokenize = tokenizer2,
+                                                    tolower = F,
+                                                    wordLengths = c(1, Inf)
+))
+
+save(dtm2, file = "dtm2.rda")
+remove(dtm2)
+gc()
+
+dtm3 <- DocumentTermMatrix(trainingProc, control = list(tokenize = tokenizer3,
+                                                    tolower = F,
+                                                    wordLengths = c(1, Inf)))
+
+save(dtm3, file = "dtm3.rda")
+remove(dtm3)
+gc()
+
+dtm4 <- DocumentTermMatrix(trainingProc, control = list(tokenize = tokenizer4,
+                                                    tolower = F,
+                                                    wordLengths = c(1, Inf)))
+
+save(dtm4, file = "dtm4.rda")
+remove(dtm4)
+gc()
+
+systimeDTM5 <- system.time(dtm5 <- DocumentTermMatrix(trainingProc, control = list(tokenize = tokenizer5,
+                                                    tolower = F,
+                                                    wordLengths = c(1, Inf))))
+
+save(dtm5, file = "dtm5.rda")
