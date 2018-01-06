@@ -6,6 +6,8 @@ library(tokenizers)
 dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
 library(rJava)
 library(qdap)
+library(hashmap)
+library(data.table)
 
 print("start")
 Sys.time()
@@ -118,9 +120,7 @@ gc()
 dictionary <- colSums(as.matrix(dtm1))
 dictionary <- dictionary[order(dictionary, decreasing = T)]
 dictionary <- dictionary[1:35000]
-# dictionary <- setNames(names(dictionary), names(dictionary))
 dictionaryHash <- hashmap(names(dictionary), names(dictionary))
-
 
 save(dictionary, file = "dictionary.rda")
 
