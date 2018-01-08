@@ -5,6 +5,7 @@
 Corpus/
 OldNGrams/
 processedCorpus/
+PredictText/
 *.db
 *.rda
 *.RData
