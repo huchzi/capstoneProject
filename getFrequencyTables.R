@@ -9,7 +9,6 @@ library(qdap)
 library(hashmap)
 library(data.table)
 
-print("start")
 Sys.time()
 
 # download.file("http://www.bannedwordlist.com/lists/swearWords.txt", "profanity.txt")
@@ -29,29 +28,22 @@ testing <- PCorpus(SRC_testing, dbControl = list(dbName = "testing.db",
 
 
 divideSentences <- function(text) {
-  
   tokenize_sentences(paste(text, collapse = " ")) %>%
     c(recursive = T)
-  
 }
 
 removeFunnyCharacters <- function(text) {
-  
   gsub("[^[:alpha:] ]", "", text)
-  
 }
 
 keepDictionaryWords <- function(text) {
-  
   FUN <- function(text)
   {
     textVector <- dictionaryHash[[text]]
     textVector <- paste(textVector[!is.na(textVector)], collapse = " ")
   }
-  
   text <- tokenize_words(text)
   lapply(text, FUN) %>% c(recursive = T)
-  
 }
 
 preProcess <- function(corpus)  {

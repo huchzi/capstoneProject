@@ -1,9 +1,0 @@
-sample.interval=20000
-"$" ".local" "[[" "[[" "FUN" "lapply" "eval" "eval" "%>%" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-".External" "x$[[" ".local" "[[" "[[" "FUN" "lapply" "eval" "eval" "%>%" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-"[[" "FUN" "lapply" "eval" "eval" "%>%" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-"paste" "FUN" "lapply" "eval" "eval" "%>%" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-".Call" "stri_split_boundaries" "tokenize_words" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-".Call" "stri_split_boundaries" "tokenize_words" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-".External" "x$[[" ".local" "[[" "[[" "FUN" "lapply" "eval" "eval" "%>%" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 
-".Call" "stri_split_boundaries" "tokenize_words" "keepDictionaryWords" "FUN" "lapply" "sapply" "replicate" 

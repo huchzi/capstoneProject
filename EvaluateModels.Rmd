@@ -1,0 +1,350 @@
+---
+title: "Validate Models"
+output: html_notebook
+---
+
+
+```{r}
+
+validationText <- tokenize_ngrams(validation[[1]]$content[1:500], n = 10) %>%
+  lapply(function(x) x[length(x)]) %>%
+  c(recursive = T) %>%
+  preprocessText()
+
+calculateValidationTable <- function(ngram_model)
+{
+  validationList <- 
+    pblapply(validationText,
+             function(x) validateModel(ngram_model, x))
+  
+  validationTable <- 
+    lapply(validationList, function(x) data.frame(precision = x$precision,
+                                                  precision10 = x$precision10,
+                                                  rank = x$rank)) %>%
+    do.call("rbind.data.frame", .)
+  
+  validationTable$precision <- as.factor(validationTable$precision)
+  validationTable$precision10 <- as.factor(validationTable$precision10)
+  
+  return(validationTable)
+}
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              0, 
+                              1)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 4L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_5grams_4words <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              0, 
+                              1)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 4L,
+  useWords = 6
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_5grams_6words <- calculateValidationTable(ngram_model)
+
+validationTable <- rbind(data.frame(validation_5grams_4words, model = "4words"),
+                         data.frame(validation_5grams_6words, model = "6words"))
+
+ggplot(validationTable, aes(x = rank)) +
+  geom_density(aes(color = model)) +
+  scale_x_continuous(limits = c(1, 100))
+  # geom_vline(xintercept = median(validationTable$rank, na.rm = T))
+
+ggplot(validationTable, aes(x = model)) +
+  geom_bar(aes(fill = precision), position = "stack")
+
+ggplot(validationTable, aes(x = model)) +
+  geom_bar(aes(fill = precision10), position = "stack")
+# 
+# print(mean(validationTable$precision == 1, na.rm = T))
+# print(mean(validationTable$precision10 == 1, na.rm = T))
+# print(median(validationTable$rank, na.rm = T))
+
+
+
+```
+
+```{r}
+
+validationText <- tokenize_ngrams(validation[[1]]$content[1:500], n = 10) %>%
+  lapply(function(x) x[length(x)]) %>%
+  c(recursive = T) %>%
+  preprocessText()
+
+calculateValidationTable <- function(ngram_model)
+{
+  validationList <- 
+    pblapply(validationText,
+             function(x) validateModel(ngram_model, x))
+  
+  validationTable <- 
+    lapply(validationList, function(x) data.frame(precision = x$precision,
+                                                  precision10 = x$precision10,
+                                                  rank = x$rank)) %>%
+    do.call("rbind.data.frame", .)
+  
+  validationTable$precision <- as.factor(validationTable$precision)
+  validationTable$precision10 <- as.factor(validationTable$precision10)
+  
+  return(validationTable)
+}
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              1)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 3L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_45grams_factor1 <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              100)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 3L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_45grams_factor100 <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              10000)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 3L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_45grams_factor10000 <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              10000000)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 3L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_45grams_factor10000000 <- calculateValidationTable(ngram_model)
+
+validationTable <- rbind(data.frame(validation_45grams_factor1, fact = 1),
+                         data.frame(validation_45grams_factor100, fact = 100),
+                         data.frame(validation_45grams_factor10000, fact = 10000),
+                         data.frame(validation_45grams_factor10000000, fact = 10000000))
+
+ggplot(validationTable, aes(x = rank)) +
+  geom_density(aes(color = as.factor(fact))) +
+  scale_x_continuous(limits = c(1, 100))
+  # geom_vline(xintercept = median(validationTable$rank, na.rm = T))
+
+ggplot(validationTable, aes(x = as.factor(fact))) +
+  geom_bar(aes(fill = precision), position = "stack")
+
+ggplot(validationTable, aes(x = as.factor(fact))) +
+  geom_bar(aes(fill = precision10), position = "stack")
+# 
+# print(mean(validationTable$precision == 1, na.rm = T))
+# print(mean(validationTable$precision10 == 1, na.rm = T))
+# print(median(validationTable$rank, na.rm = T))
+
+
+
+```
+
+```{r}
+
+validationText <- tokenize_ngrams(validation[[1]]$content[1:500], n = 10) %>%
+  lapply(function(x) x[length(x)]) %>%
+  c(recursive = T) %>%
+  preprocessText()
+
+calculateValidationTable <- function(ngram_model)
+{
+  validationList <- 
+    pblapply(validationText,
+             function(x) validateModel(ngram_model, x))
+  
+  validationTable <- 
+    lapply(validationList, function(x) data.frame(precision = x$precision,
+                                                  precision10 = x$precision10,
+                                                  rank = x$rank)) %>%
+    do.call("rbind.data.frame", .)
+  
+  validationTable$precision <- as.factor(validationTable$precision)
+  validationTable$precision10 <- as.factor(validationTable$precision10)
+  
+  return(validationTable)
+}
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              0)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 1L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_4grams <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              1, 
+                              0, 
+                              0)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 1L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_3grams <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              1, 
+                              0, 
+                              0, 
+                              0)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 1L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_2grams <- calculateValidationTable(ngram_model)
+
+validationTable <- rbind(data.frame(validation_4grams, n = 4),
+                         data.frame(validation_3grams, n = 3),
+                         data.frame(validation_2grams, n = 2))
+
+ggplot(validationTable, aes(x = rank)) +
+  geom_density(aes(color = as.factor(n))) +
+  scale_x_continuous(limits = c(1, 100))
+  # geom_vline(xintercept = median(validationTable$rank, na.rm = T))
+
+ggplot(validationTable, aes(x = as.factor(n))) +
+  geom_bar(aes(fill = precision), position = "stack")
+
+ggplot(validationTable, aes(x = as.factor(n))) +
+  geom_bar(aes(fill = precision10), position = "stack")
+# 
+# print(mean(validationTable$precision == 1, na.rm = T))
+# print(mean(validationTable$precision10 == 1, na.rm = T))
+# print(median(validationTable$rank, na.rm = T))
+
+
+
+```
+
+```{r}
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              10^-6, 
+                              1, 
+                              10^6, 
+                              10^12)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 1L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_mixed <- calculateValidationTable(ngram_model)
+
+ngram_model <- list(
+  weights = data.frame(n = c(1:5), 
+                        w = c(0, 
+                              0, 
+                              0, 
+                              1, 
+                              10^6)) %>% 
+    data.table(),
+  n_max = 4L,
+  n_min = 1L,
+  useWords = 4
+)
+class(ngram_model) <- c("list", "ngramModel")
+
+validation_45 <- calculateValidationTable(ngram_model)
+  
+validationTable <- rbind(data.frame(validation_mixed, model = "mixed"),
+                         data.frame(validation_45, model = "45"))
+
+ggplot(validationTable, aes(x = rank)) +
+  geom_density(aes(color = as.factor(model))) +
+  scale_x_continuous(limits = c(1, 100))
+  # geom_vline(xintercept = median(validationTable$rank, na.rm = T))
+
+ggplot(validationTable, aes(x = as.factor(model))) +
+  geom_bar(aes(fill = precision), position = "stack")
+
+ggplot(validationTable, aes(x = as.factor(model))) +
+  geom_bar(aes(fill = precision10), position = "stack")
+# 
+# print(mean(validationTable$precision == 1, na.rm = T))
+# print(mean(validationTable$precision10 == 1, na.rm = T))
+# print(median(validationTable$rank, na.rm = T))
+
+
+
+```
+

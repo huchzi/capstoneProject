@@ -95,19 +95,11 @@ rm(ngrams1)
 setorder(ngrams, -n, -freq)
 setkey(ngrams, key)
 
-getLastFour <- function(text) {
-  rm <- gregexpr("([[:alpha:]]+ ){3}([[:alpha:]]+$)", text)
-  regmatches(x = text, m = rm)
-}
 
 predictions <-
   quiz2 %>%
   preprocessText() %>%
-  # removeWords(stopwords("en")) %>%
-  # stripWhitespace() %>%
-  # getLastFour() %>%
   tokenize_ngrams(n = 4, n_min = 2) %>%
-  # tokenize_skip_ngrams(n = 3, k = 2) %>%
   lapply(function(x) ngrams[x])
 
 predictions[[1]][prediction %in% c("die", "give", "eat", "sleep"), sum(freq), by = .(n, prediction)]
