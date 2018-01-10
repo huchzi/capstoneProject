@@ -9,3 +9,5 @@ PredictText/
 *.db
 *.rda
 *.RData
+presentation-figure/
+.DS_Store
