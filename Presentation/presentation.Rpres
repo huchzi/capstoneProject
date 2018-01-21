@@ -1,7 +1,7 @@
 PredictText - the future of text prediction is (almost) here...
 ========================================================
-author: 
-date: 
+author: CH
+date: 01/21/2018
 autosize: true
 
 Main features 
@@ -22,7 +22,7 @@ How does it predict text?
 ```{r, include=FALSE}
 
 library(data.table)
-load("PredictText/ngrams.rda")
+load("../PredictText/ngrams.rda")
 
 ```
 
@@ -69,7 +69,7 @@ One idea that improved efficiency
 
 library(hashmap)
 library(tokenizers)
-load("dictionary.rda")
+load("../PredictText/dictionary.rda")
 
 ```
 

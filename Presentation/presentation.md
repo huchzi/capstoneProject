@@ -1,7 +1,7 @@
 PredictText - the future of text prediction is (almost) here...
 ========================================================
-author: 
-date: 
+author: CH
+date: 01/21/2018
 autosize: true
 
 Main features 
