@@ -8,30 +8,13 @@ preProcess(validation)
 
 # somehow there were problems when the variable was reloaded from a saved workspace
 #  Fehler in x$`[[`(i) : external pointer is not valid 
-dictionaryHash <- hashmap(names(dictionary), names(dictionary)) # somehow there were problems
+dictionaryHash <- hashmap(names(dictionary), names(dictionary))
 
 removeNonDictWordsTime <- system.time(
   tm_map(validation, content_transformer(keepDictionaryWords))
 ) # took 92 sec
 
-# validate with or without removing non-dict words?
 
-predict.ngramModel <- function(model, text) {
-  
-  regEx <- paste("([[:alpha:]]+ ){0,", model$useWords - 1, "}([[:alpha:]]+$)", sep = "")
-  text <- regmatches(x = text, m = gregexpr(regEx, text))[[1]]
-  
-  predictTable <-
-    tokenize_ngrams(text, n = model$n_max, n_min = model$n_min) %>%
-    ngrams[.]
-  
-  predictTable <- predictTable[model$weights, on = "n", nomatch = 0]
-  predictTable <- predictTable[, .(cFreq = sum(freq * w)), by = prediction]
-  setorder(predictTable, -cFreq)
-  
-  predictTable
-  
-}
 
 separateLastWord <- function(text, verbose = F) {
   
